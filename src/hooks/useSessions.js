@@ -1,6 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { SKILLS } from '../data/skills'
 
 // Returns ISO date string for today
 export function today() {
@@ -31,40 +30,33 @@ export function useSessionsForSkill(skillId) {
   )
 }
 
-export function useTodayStatus() {
+// skills is the merged array from useSkills() — pass it in
+export function useTodayStatus(skills) {
   const todayStr = today()
   const weekDates = currentWeekDates()
 
   return useLiveQuery(async () => {
+    if (!skills) return null
     const allSessions = await db.sessions.toArray()
 
-    return SKILLS.map((skill) => {
+    return skills.map((skill) => {
+      const id = skill.skillId ?? skill.id
       const { target } = skill
       let done, goal, sessions
 
       if (target.type === 'daily') {
-        sessions = allSessions.filter(
-          (s) => s.skillId === skill.id && s.date === todayStr
-        )
+        sessions = allSessions.filter((s) => s.skillId === id && s.date === todayStr)
         done = sessions.length
         goal = target.count
       } else {
-        sessions = allSessions.filter(
-          (s) => s.skillId === skill.id && weekDates.includes(s.date)
-        )
+        sessions = allSessions.filter((s) => s.skillId === id && weekDates.includes(s.date))
         done = sessions.length
         goal = target.count
       }
 
-      return {
-        skill,
-        done,
-        goal,
-        complete: done >= goal,
-        sessions,
-      }
+      return { skill: { ...skill, id }, done, goal, complete: done >= goal, sessions }
     })
-  }, [])
+  }, [skills])
 }
 
 export async function logSession({ skillId, durationMinutes, drills = [], notes = '' }) {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { skillById } from '../data/skills'
+import { useSkill } from '../hooks/useSkills'
 import { logSession } from '../hooks/useSessions'
 
 const DURATION_PRESETS = [10, 20, 30, 45, 60, 90]
@@ -8,7 +8,7 @@ const DURATION_PRESETS = [10, 20, 30, 45, 60, 90]
 export default function LogSession() {
   const { skillId } = useParams()
   const navigate = useNavigate()
-  const skill = skillById[skillId]
+  const skill = useSkill(skillId)
 
   const [duration, setDuration] = useState(30)
   const [customDuration, setCustomDuration] = useState('')
@@ -16,9 +16,11 @@ export default function LogSession() {
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
-  if (!skill) return <div className="p-6 text-slate-400">Skill not found.</div>
+  if (skill === null) return <div className="p-6 text-slate-400">Skill not found.</div>
+  if (skill === undefined) return <div className="p-6 text-slate-400">Loading…</div>
 
   const effectiveDuration = customDuration ? Number(customDuration) : duration
+  const drills = skill.drills ?? []
 
   function toggleDrill(id) {
     setSelectedDrills((prev) =>
@@ -30,7 +32,7 @@ export default function LogSession() {
     if (!effectiveDuration || effectiveDuration < 1) return
     setSaving(true)
     await logSession({
-      skillId: skill.id,
+      skillId,
       durationMinutes: effectiveDuration,
       drills: selectedDrills,
       notes,
@@ -40,7 +42,6 @@ export default function LogSession() {
 
   return (
     <div className="px-4 pt-6 pb-32">
-      {/* Header */}
       <button onClick={() => navigate(-1)} className="text-slate-400 text-sm mb-4 flex items-center gap-1">
         ← Back
       </button>
@@ -49,7 +50,6 @@ export default function LogSession() {
         <h1 className="text-2xl font-bold text-white">{skill.name}</h1>
       </div>
 
-      {/* Duration */}
       <section className="mb-6">
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
           Duration (minutes)
@@ -78,33 +78,33 @@ export default function LogSession() {
         />
       </section>
 
-      {/* Drills */}
-      <section className="mb-6">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-          Drills practiced
-        </h2>
-        <div className="space-y-2">
-          {skill.drills.map((drill) => {
-            const active = selectedDrills.includes(drill.id)
-            return (
-              <button
-                key={drill.id}
-                onClick={() => toggleDrill(drill.id)}
-                className={`w-full text-left rounded-xl px-4 py-3 border transition-colors ${
-                  active
-                    ? 'bg-blue-600/20 border-blue-500 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-300 active:bg-slate-700'
-                }`}
-              >
-                <p className="font-medium text-sm">{drill.label}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{drill.note}</p>
-              </button>
-            )
-          })}
-        </div>
-      </section>
+      {drills.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+            Drills practiced
+          </h2>
+          <div className="space-y-2">
+            {drills.map((drill) => {
+              const active = selectedDrills.includes(drill.id)
+              return (
+                <button
+                  key={drill.id}
+                  onClick={() => toggleDrill(drill.id)}
+                  className={`w-full text-left rounded-xl px-4 py-3 border transition-colors ${
+                    active
+                      ? 'bg-blue-600/20 border-blue-500 text-white'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 active:bg-slate-700'
+                  }`}
+                >
+                  <p className="font-medium text-sm">{drill.label}</p>
+                  {drill.note && <p className="text-xs text-slate-400 mt-0.5">{drill.note}</p>}
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
-      {/* Notes */}
       <section className="mb-8">
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
           Notes (optional)
@@ -118,7 +118,6 @@ export default function LogSession() {
         />
       </section>
 
-      {/* Save button — fixed at bottom */}
       <div className="fixed bottom-20 left-0 right-0 px-4">
         <button
           onClick={handleSave}

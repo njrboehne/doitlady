@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import BottomNav from './components/BottomNav'
 import Today from './pages/Today'
 import Stats from './pages/Stats'
+import Skills from './pages/Skills'
+import AddSkill from './pages/AddSkill'
 import LogSession from './pages/LogSession'
 import SkillDetail from './pages/SkillDetail'
 
@@ -12,6 +14,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Today />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/skills" element={<Skills />} />
+          <Route path="/skills/add" element={<AddSkill />} />
           <Route path="/log/:skillId" element={<LogSession />} />
           <Route path="/skill/:skillId" element={<SkillDetail />} />
         </Routes>

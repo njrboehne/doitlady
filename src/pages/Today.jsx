@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 import { useTodayStatus } from '../hooks/useSessions'
+import { useSkills } from '../hooks/useSkills'
 
 export default function Today() {
   const navigate = useNavigate()
-  const statuses = useTodayStatus()
+  const skills = useSkills()
+  const statuses = useTodayStatus(skills)
 
   if (!statuses) return <div className="p-6 text-slate-400">Loading…</div>
 
@@ -83,12 +85,8 @@ function SkillRow({ skill, done, goal, complete, onClick }) {
       </div>
       <div className="flex items-center gap-3">
         <ProgressPips done={done} goal={goal} complete={complete} />
-        {!complete && (
-          <span className="text-slate-400 text-sm">+</span>
-        )}
-        {complete && (
-          <span className="text-emerald-400 text-lg">✓</span>
-        )}
+        {!complete && <span className="text-slate-400 text-sm">+</span>}
+        {complete && <span className="text-emerald-400 text-lg">✓</span>}
       </div>
     </button>
   )

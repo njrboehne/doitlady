@@ -1,15 +1,15 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { skillById } from '../data/skills'
+import { useSkill } from '../hooks/useSkills'
 import { useSessionsForSkill, deleteSession } from '../hooks/useSessions'
 
 export default function SkillDetail() {
   const { skillId } = useParams()
   const navigate = useNavigate()
-  const skill = skillById[skillId]
+  const skill = useSkill(skillId)
   const sessions = useSessionsForSkill(skillId)
 
-  if (!skill) return <div className="p-6 text-slate-400">Skill not found.</div>
-  if (!sessions) return <div className="p-6 text-slate-400">Loading…</div>
+  if (skill === null) return <div className="p-6 text-slate-400">Skill not found.</div>
+  if (!skill || !sessions) return <div className="p-6 text-slate-400">Loading…</div>
 
   const totalMinutes = sessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0)
 

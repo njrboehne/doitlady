@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAllSessions, currentWeekDates } from '../hooks/useSessions'
-import { SKILLS } from '../data/skills'
+import { useSkills } from '../hooks/useSkills'
 
 function getLast8Weeks() {
   const weeks = []
@@ -27,10 +27,11 @@ function getLast8Weeks() {
 export default function Stats() {
   const navigate = useNavigate()
   const sessions = useAllSessions()
+  const skills = useSkills()
   const weeks = useMemo(() => getLast8Weeks(), [])
   const weekDates = currentWeekDates()
 
-  if (!sessions) return <div className="p-6 text-slate-400">Loading…</div>
+  if (!sessions || !skills) return <div className="p-6 text-slate-400">Loading…</div>
 
   const totalMinutes = sessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0)
   const totalHours = (totalMinutes / 60).toFixed(1)
@@ -41,24 +42,21 @@ export default function Stats() {
       <p className="text-slate-400 text-sm mb-6">{totalHours}h logged total</p>
 
       <div className="space-y-6">
-        {SKILLS.map((skill) => {
-          const skillSessions = sessions.filter((s) => s.skillId === skill.id)
+        {skills.map((skill) => {
+          const id = skill.skillId ?? skill.id
+          const skillSessions = sessions.filter((s) => s.skillId === id)
           const totalSkillMin = skillSessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0)
           const thisWeekCount = skillSessions.filter((s) => weekDates.includes(s.date)).length
-
-          // Compute streak (in target periods)
-          const streak = computeStreak(skill, sessions)
-
-          // Weekly heatmap: for each of last 8 weeks, how many sessions
+          const streak = computeStreak({ ...skill, id }, sessions)
           const weekCounts = weeks.map((wDates) =>
             skillSessions.filter((s) => wDates.includes(s.date)).length
           )
 
           return (
             <div
-              key={skill.id}
+              key={id}
               className="bg-slate-800 border border-slate-700 rounded-2xl p-4"
-              onClick={() => navigate(`/skill/${skill.id}`)}
+              onClick={() => navigate(`/skill/${id}`)}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -77,7 +75,6 @@ export default function Stats() {
                 </div>
               </div>
 
-              {/* 8-week heatmap */}
               <div className="flex gap-1 mb-2">
                 {weekCounts.map((count, i) => {
                   const pct = Math.min(count / skill.target.count, 1)
@@ -95,7 +92,6 @@ export default function Stats() {
                             ? 'rgb(37 99 235 / 0.8)'
                             : 'rgb(16 185 129)',
                       }}
-                      title={`${count} sessions`}
                     />
                   )
                 })}
@@ -116,34 +112,24 @@ export default function Stats() {
 function computeStreak(skill, allSessions) {
   const skillSessions = allSessions.filter((s) => s.skillId === skill.id)
   if (!skillSessions.length) return 0
-
   const dateSet = new Set(skillSessions.map((s) => s.date))
 
   if (skill.target.type === 'daily') {
-    // Count consecutive days back from today
     let streak = 0
     const d = new Date()
     while (true) {
       const key = d.toISOString().slice(0, 10)
-      if (dateSet.has(key)) {
-        streak++
-        d.setDate(d.getDate() - 1)
-      } else {
-        break
-      }
+      if (dateSet.has(key)) { streak++; d.setDate(d.getDate() - 1) }
+      else break
     }
     return streak
   } else {
-    // Weekly: count consecutive weeks with >= target.count sessions
     const weeks = getLast8Weeks()
     let streak = 0
     for (let w = weeks.length - 1; w >= 0; w--) {
       const count = skillSessions.filter((s) => weeks[w].includes(s.date)).length
-      if (count >= skill.target.count) {
-        streak++
-      } else {
-        break
-      }
+      if (count >= skill.target.count) streak++
+      else break
     }
     return streak
   }
