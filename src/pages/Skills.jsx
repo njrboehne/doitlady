@@ -45,12 +45,20 @@ export default function Skills() {
                 </div>
               </button>
               {skill.custom && (
-                <button
-                  onClick={() => deleteCustomSkill(skill.id)}
-                  className="text-slate-600 hover:text-red-400 text-xs transition-colors ml-4"
-                >
-                  delete
-                </button>
+                <div className="flex gap-3 ml-4">
+                  <button
+                    onClick={() => navigate(`/skills/edit/${skill.skillId}`)}
+                    className="text-slate-400 hover:text-white text-xs transition-colors"
+                  >
+                    edit
+                  </button>
+                  <button
+                    onClick={() => deleteCustomSkill(skill.id)}
+                    className="text-slate-600 hover:text-red-400 text-xs transition-colors"
+                  >
+                    delete
+                  </button>
+                </div>
               )}
             </div>
           )

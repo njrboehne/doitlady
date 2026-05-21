@@ -31,6 +31,14 @@ export async function addCustomSkill({ name, emoji, targetType, targetCount }) {
   })
 }
 
+export async function updateCustomSkill(id, { name, emoji, targetType, targetCount }) {
+  await db.customSkills.update(id, {
+    name,
+    emoji: emoji || '⭐',
+    target: { type: targetType, count: Number(targetCount) },
+  })
+}
+
 export async function deleteCustomSkill(id) {
   await db.customSkills.delete(id)
 }

@@ -4,6 +4,7 @@ import Today from './pages/Today'
 import Stats from './pages/Stats'
 import Skills from './pages/Skills'
 import AddSkill from './pages/AddSkill'
+import EditSkill from './pages/EditSkill'
 import LogSession from './pages/LogSession'
 import SkillDetail from './pages/SkillDetail'
 
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/skills/add" element={<AddSkill />} />
+          <Route path="/skills/edit/:skillId" element={<EditSkill />} />
           <Route path="/log/:skillId" element={<LogSession />} />
           <Route path="/skill/:skillId" element={<SkillDetail />} />
         </Routes>
