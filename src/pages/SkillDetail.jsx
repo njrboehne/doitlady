@@ -43,9 +43,10 @@ export default function SkillDetail() {
         </h2>
         <div className="space-y-2">
           {skill.drills.map((drill) => (
-            <div
+            <button
               key={drill.id}
-              className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3"
+              onClick={() => navigate(`/log/${skillId}?drill=${drill.id}`)}
+              className="w-full text-left bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 active:bg-slate-700 transition-colors"
             >
               <div className="flex items-start justify-between">
                 <p className="font-medium text-white text-sm">{drill.label}</p>
@@ -56,7 +57,7 @@ export default function SkillDetail() {
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">{drill.note}</p>
-            </div>
+            </button>
           ))}
         </div>
       </section>

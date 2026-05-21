@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useSkill } from '../hooks/useSkills'
 import { logSession } from '../hooks/useSessions'
 
@@ -21,6 +21,7 @@ export function fmtDuration(minutes) {
 
 export default function LogSession() {
   const { skillId } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const skill = useSkill(skillId)
 
@@ -35,7 +36,11 @@ export default function LogSession() {
   const [durationMinutes, setDurationMinutes] = useState(null)
   const [timerUsed, setTimerUsed] = useState(false)
 
-  const [selectedDrills, setSelectedDrills] = useState([])
+  // Pre-select drill from ?drill= param
+  const preselectedDrill = searchParams.get('drill')
+  const [selectedDrills, setSelectedDrills] = useState(
+    preselectedDrill ? [preselectedDrill] : []
+  )
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
