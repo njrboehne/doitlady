@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useSkill } from '../hooks/useSkills'
 import { useSessionsForSkill, deleteSession } from '../hooks/useSessions'
+import { fmtDuration } from './LogSession'
 
 export default function SkillDetail() {
   const { skillId } = useParams()
@@ -32,7 +33,7 @@ export default function SkillDetail() {
         <h1 className="text-2xl font-bold text-white">{skill.name}</h1>
       </div>
       <p className="text-slate-400 text-sm mb-6">
-        {sessions.length} sessions · {(totalMinutes / 60).toFixed(1)}h total
+        {sessions.length} sessions · {fmtDuration(totalMinutes)} total
       </p>
 
       {/* Drill Library */}
@@ -103,7 +104,7 @@ function SessionCard({ session, skill, onDelete }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-white text-sm font-medium">{session.date}</p>
-          <p className="text-slate-400 text-xs">{session.durationMinutes} min</p>
+          <p className="text-slate-400 text-xs">{fmtDuration(session.durationMinutes)}</p>
         </div>
         <button
           onClick={onDelete}
